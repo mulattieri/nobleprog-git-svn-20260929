@@ -5,12 +5,14 @@ var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.
 var settings = JsonDocument.Parse(json).RootElement.GetProperty("Catalog");
 
 var vatRate = settings.GetProperty("VatRate").GetDecimal();
+var reducedVatRate = settings.GetProperty("ReducedVatRate").GetDecimal();
+var reducedCodes = settings.GetProperty("ReducedVatCodes").EnumerateArray().Select(e => e.GetString()!).ToHashSet();
 var dataFile = settings.GetProperty("DataFile").GetString()!;
 var currency = settings.GetProperty("Currency").GetString();
 var lowStock = settings.GetProperty("LowStockThreshold").GetInt32();
 
 var products = CatalogLoader.Load(dataFile);
-var calculator = new PriceCalculator(vatRate);
+var calculator = new PriceCalculator(vatRate, reducedVatRate, reducedCodes);
 
 foreach (var product in products)
 {
